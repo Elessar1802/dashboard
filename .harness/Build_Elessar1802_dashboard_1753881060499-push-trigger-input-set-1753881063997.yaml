@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_Elessar1802_dashboard_1753881060499-push-trigger-input-set
+  identifier: Build_Elessar1802_dashboard_1753881060499pushtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: default_project
+  pipeline:
+    identifier: Build_Elessar1802_dashboard_1753881060499
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: <+trigger.branch>
