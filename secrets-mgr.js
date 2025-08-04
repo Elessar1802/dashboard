@@ -12,6 +12,47 @@ const EXIT_CODES = {
     HELP: 2,
 }
 
+const isInitializeScript = () => {
+    return new Promise((resolve, reject) => {
+        // Initialization logic here
+        const init = async () => {
+            try {
+                // Check if the directory exists, create it if it doesn't
+                const scriptDir = path.dirname(SCRIPT_PATH)
+                if (!fs.existsSync(scriptDir)) {
+                    logger.info(`Creating directory: ${scriptDir}`)
+                    fs.mkdirSync(scriptDir, { recursive: true })
+                }
+
+                // Check if the script file exists
+                if (fs.existsSync(SCRIPT_PATH)) {
+                    logger.info(`Script already exists at ${SCRIPT_PATH}`)
+                    resolve(false)
+                    return
+                }
+
+                // Get the current script content
+                const currentScriptPath = process.argv[1]
+                const currentScriptContent = fs.readFileSync(currentScriptPath, 'utf8')
+
+                // Write the current script content to SCRIPT_PATH
+                fs.writeFileSync(SCRIPT_PATH, currentScriptContent)
+                logger.success(`Script copied to ${SCRIPT_PATH}`)
+
+                // Make the new script executable
+                fs.chmodSync(SCRIPT_PATH, '755')
+                logger.success(`Script permissions set to executable`)
+                resolve(false)
+            } catch (error) {
+                logger.error(`Failed to initialize script: ${error.message}`)
+                // Continue execution even if initialization fails
+            }
+        }
+
+        init().catch(reject)
+    })
+}
+
 /**
  * Helper for styled console logs with emojis
  */
@@ -310,22 +351,30 @@ const main = async () => {
 
 // Execute the script
 if (require.main === module) {
-    main().then(() => {
-      console.log('✅ Secrets updated successfully')
-      console.log('🚀 Starting development server...')
-  
-      // Start the development server
-      const startDev = spawn('yarn', ['start'], {
-          stdio: 'inherit',
-      })
-  
-      startDev.on('close', (code) => {
-          process.exit(code)
-      })
-    }).catch((error) => {
-        logger.error(`Unhandled error: ${error.message}`)
-        process.exit(EXIT_CODES.ERROR)
-    })
+    isInitializeScript()
+        .then((wasInitialize) => {
+            if (wasInitialize) {
+                return
+            }
+
+            main().then(() => {
+                console.log('✅ Secrets updated successfully')
+                console.log('🚀 Starting development server...')
+
+                // Start the development server
+                const startDev = spawn('yarn', ['start'], {
+                    stdio: 'inherit',
+                })
+
+                startDev.on('close', (code) => {
+                    process.exit(code)
+                })
+            })
+        })
+        .catch((error) => {
+            logger.error(`Unhandled error: ${error.message}`)
+            process.exit(EXIT_CODES.ERROR)
+        })
 }
 
 // Export functions for potential reuse
