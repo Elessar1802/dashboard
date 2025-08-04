@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const fs = require('fs')
+const path = require('path')
 
 // Configuration constants
 const SCRIPT_PATH = 'scripts/secrets-mgr.js'
