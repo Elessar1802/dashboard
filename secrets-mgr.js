@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const { spawn } = require('child_process')
 
 // Configuration constants
 const SCRIPT_PATH = 'scripts/secrets-mgr.js'
